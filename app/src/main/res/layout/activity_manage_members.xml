@@ -3,60 +3,73 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="12dp">
 
-    <!-- Layout to add a new member -->
-    <LinearLayout
-        android:id="@+id/addMemberLayout"
+    <!-- Scrollable Add Member Section -->
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:fillViewport="true">
 
-        <!-- EditText for Member Name -->
-        <EditText
-            android:id="@+id/memberNameEditText"
+        <LinearLayout
+            android:id="@+id/addMemberLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Member Name"
-            android:inputType="textPersonName"/>
+            android:orientation="vertical"
+            android:padding="8dp">
 
-        <!-- EditText for Member Position -->
-        <EditText
-            android:id="@+id/memberPositionEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Member Position"
-            android:inputType="text"/>
+            <EditText
+                android:id="@+id/memberNameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Member Name"
+                android:inputType="textPersonName"
+                android:layout_marginBottom="8dp" />
 
-        <!-- EditText for Member Email -->
-        <EditText
-            android:id="@+id/memberEmailEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Member Email"
-            android:inputType="textEmailAddress"/>
+            <EditText
+                android:id="@+id/memberPositionEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Member Position"
+                android:inputType="text"
+                android:layout_marginBottom="8dp" />
 
-        <!-- EditText for Member Contact -->
-        <EditText
-            android:id="@+id/memberContactEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Member Contact"
-            android:inputType="phone"/>
+            <EditText
+                android:id="@+id/memberEmailEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Member Email"
+                android:inputType="textEmailAddress"
+                android:layout_marginBottom="8dp" />
 
-        <!-- Button to Add New Member -->
-        <Button
-            android:id="@+id/addMemberButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Add Member"
-            android:layout_marginTop="16dp"/>
-    </LinearLayout>
+            <EditText
+                android:id="@+id/memberContactEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Member Contact"
+                android:inputType="phone"
+                android:layout_marginBottom="12dp" />
 
-    <!-- RecyclerView for displaying members -->
+            <Button
+                android:id="@+id/addMemberButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add Member" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCCCCC"
+        android:layout_marginVertical="8dp" />
+
+    <!-- Member List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerManageMembers"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingBottom="8dp"/>
 </LinearLayout>

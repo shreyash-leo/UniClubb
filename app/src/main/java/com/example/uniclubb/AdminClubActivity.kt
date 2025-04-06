@@ -1,3 +1,4 @@
+// AdminClubActivity.kt
 package com.example.uniclubb
 
 import android.content.Intent

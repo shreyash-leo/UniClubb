@@ -29,13 +29,6 @@ class ManageMembersActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manage_members)
 
-        // Initialize RecyclerView
-        recyclerView = findViewById(R.id.recyclerManageMembers)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = MemberAdapter(members, clubId)
-        recyclerView.adapter = adapter
-
-        // Get club ID from Intent
         clubId = intent.getStringExtra("clubId")
         if (clubId == null) {
             Toast.makeText(this, "Club ID missing", Toast.LENGTH_SHORT).show()
@@ -43,10 +36,11 @@ class ManageMembersActivity : AppCompatActivity() {
             return
         }
 
-        // Load members from Firestore
-        loadMembers()
+        recyclerView = findViewById(R.id.recyclerManageMembers)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        adapter = MemberAdapter(members, clubId!!)
+        recyclerView.adapter = adapter
 
-        // Initialize Add Member Views
         addMemberLayout = findViewById(R.id.addMemberLayout)
         memberNameEditText = findViewById(R.id.memberNameEditText)
         memberPositionEditText = findViewById(R.id.memberPositionEditText)
@@ -54,62 +48,76 @@ class ManageMembersActivity : AppCompatActivity() {
         memberContactEditText = findViewById(R.id.memberContactEditText)
         addMemberButton = findViewById(R.id.addMemberButton)
 
-        // Set up Add Member button click listener
         addMemberButton.setOnClickListener {
-            val name = memberNameEditText.text.toString()
-            val position = memberPositionEditText.text.toString()
-            val email = memberEmailEditText.text.toString()
-            val contact = memberContactEditText.text.toString()
+            val name = memberNameEditText.text.toString().trim()
+            val position = memberPositionEditText.text.toString().trim()
+            val email = memberEmailEditText.text.toString().trim()
+            val contact = memberContactEditText.text.toString().trim()
 
-            // Validate input fields
             if (name.isNotBlank() && position.isNotBlank() && email.isNotBlank() && contact.isNotBlank()) {
-                addMember(name, position, email, contact)
+                val isDuplicate = members.any { it.memberEmail.equals(email, ignoreCase = true) }
+                if (isDuplicate) {
+                    Toast.makeText(this, "Member already exists", Toast.LENGTH_SHORT).show()
+                } else {
+                    addMember(name, position, email, contact)
+                }
             } else {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
             }
         }
+
+        loadMembers()
     }
 
-    // Load members from Firestore
     private fun loadMembers() {
         db.collection("clubs").document(clubId!!).collection("members")
             .get()
             .addOnSuccessListener { snapshot ->
-                members.clear() // Clear the existing list to avoid duplicates
+                members.clear()
                 for (doc in snapshot) {
                     val member = doc.toObject(Member::class.java)
-                    members.add(member) // Add new members to the list
+                    members.add(member)
                 }
-                adapter.notifyDataSetChanged() // Notify adapter to update RecyclerView
+                adapter.notifyDataSetChanged()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Failed to load members", Toast.LENGTH_SHORT).show()
             }
     }
 
-    // Add a new member to Firestore
     private fun addMember(name: String, position: String, email: String, contact: String) {
-        val newMember = hashMapOf(
-            "name" to name,
-            "position" to position,
-            "email" to email,
-            "contact" to contact
+        val newMember = Member(name, email, position)
+
+        val memberMap = hashMapOf(
+            "memberName" to name,
+            "memberPosition" to position,
+            "memberEmail" to email,
+            "memberContact" to contact
         )
 
-        // Add the new member to Firestore
         db.collection("clubs").document(clubId!!).collection("members")
-            .add(newMember)
+            .add(memberMap)
             .addOnSuccessListener {
                 Toast.makeText(this, "Member Added", Toast.LENGTH_SHORT).show()
-                loadMembers() // Reload member list after adding
-                resetInputFields() // Clear input fields
+                members.add(newMember)
+                adapter.notifyItemInserted(members.size - 1)
+
+                // Update the parent club document with new member list
+                db.collection("clubs").document(clubId!!)
+                    .update("members", members)
+                    .addOnSuccessListener {
+                        resetInputFields()
+                        setResult(RESULT_OK) // Notify ClubDetailActivity to refresh
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Failed to sync members with main doc", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Error Adding Member", Toast.LENGTH_SHORT).show()
             }
     }
 
-    // Reset input fields after adding a member
     private fun resetInputFields() {
         memberNameEditText.text.clear()
         memberPositionEditText.text.clear()

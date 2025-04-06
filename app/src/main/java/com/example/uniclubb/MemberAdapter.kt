@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MemberAdapter(
-    private val members: MutableList<Member>,  // MutableList to allow updates
+    private val members: MutableList<Member>,
     private val clubId: String?
 ) : RecyclerView.Adapter<MemberAdapter.MemberViewHolder>() {
 
@@ -32,7 +32,6 @@ class MemberAdapter(
         holder.email.text = member.memberEmail
         holder.position.text = member.memberPosition
 
-        // Handle member removal on click
         holder.removeButton.setOnClickListener {
             member.memberEmail?.let { email ->
                 clubId?.let { id ->
@@ -44,35 +43,35 @@ class MemberAdapter(
 
     override fun getItemCount(): Int = members.size
 
-    // Modified to accept context and position to update the RecyclerView
     private fun removeMember(clubId: String, email: String, context: Context, position: Int) {
         val db = FirebaseFirestore.getInstance()
-        val clubRef = db.collection("clubs").document(clubId)
 
-        clubRef.get().addOnSuccessListener { doc ->
-            val club = doc.toObject(Club::class.java)
-            val updatedMembers = club?.members?.filter { it.memberEmail != email }
-
-            // Update Firestore
-            clubRef.update("members", updatedMembers)
-                .addOnSuccessListener {
-                    // Remove the member from the local list and update the UI
-                    members.removeAt(position)
-                    notifyItemRemoved(position)
-
-                    Toast.makeText(
-                        context,
-                        "Member removed!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+        // Step 1: Remove from subcollection
+        db.collection("clubs").document(clubId)
+            .collection("members")
+            .whereEqualTo("memberEmail", email)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (doc in querySnapshot.documents) {
+                    doc.reference.delete()
                 }
-                .addOnFailureListener {
-                    Toast.makeText(
-                        context,
-                        "Error removing member.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-        }
+
+                // Step 2: Remove from local list and update UI
+                val removedMember = members.removeAt(position)
+                notifyItemRemoved(position)
+
+                // Step 3: Update the main club document's 'members' array
+                db.collection("clubs").document(clubId)
+                    .update("members", members)
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Member removed!", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(context, "Failed to update main club doc", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Error removing member from subcollection", Toast.LENGTH_SHORT).show()
+            }
     }
 }

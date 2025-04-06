@@ -179,22 +179,28 @@ class ClubDetailActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_CODE_MANAGE_MEMBERS && resultCode == RESULT_OK) {
-            val updatedMembers = data?.getParcelableArrayListExtra<Member>("updatedMembers")
+            val db = FirebaseFirestore.getInstance()
+            val clubId = intent.getStringExtra("club_id") ?: return
 
-            updatedMembers?.let {
-                // Update member list and UI
-                layoutMembers.removeAllViews()
-                it.forEach { member ->
-                    val memberView = LayoutInflater.from(this).inflate(R.layout.item_member, layoutMembers, false)
-                    memberView.findViewById<TextView>(R.id.textViewMemberName).text =
-                        "${member.memberName} (${member.memberPosition})"
-                    memberView.findViewById<TextView>(R.id.textViewMemberEmail).text =
-                        "Email: ${member.memberEmail}"
-                    memberView.findViewById<ImageView>(R.id.imageViewBadge)
-                        .setImageResource(R.drawable.ic_user_badge)
-                    layoutMembers.addView(memberView)
+            db.collection("clubs").document(clubId).collection("members")
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    layoutMembers.removeAllViews()
+                    for (doc in snapshot) {
+                        val member = doc.toObject(Member::class.java)
+                        val memberView = LayoutInflater.from(this).inflate(R.layout.item_member, layoutMembers, false)
+                        memberView.findViewById<TextView>(R.id.textViewMemberName).text =
+                            "${member.memberName} (${member.memberPosition})"
+                        memberView.findViewById<TextView>(R.id.textViewMemberEmail).text =
+                            "Email: ${member.memberEmail}"
+                        memberView.findViewById<ImageView>(R.id.imageViewBadge)
+                            .setImageResource(R.drawable.ic_user_badge)
+                        layoutMembers.addView(memberView)
+                    }
                 }
-            }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to load updated members", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 

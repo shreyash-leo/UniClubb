@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "56320771216",
+    "project_id": "uniclubb1974",
+    "storage_bucket": "uniclubb1974.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56320771216:android:4301958de4168c47900415",
+        "android_client_info": {
+          "package_name": "com.example.uniclubb"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOfK4q1XkBteERVHBnNxZ3O3zF04CUOiw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

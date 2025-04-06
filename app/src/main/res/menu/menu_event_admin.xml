@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_edit_event"
+        android:title="Edit Event"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/menu_cancel_event"
+        android:title="Cancel Event"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/menu_view_registrations"
+        android:title="View Registrations"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:showAsAction="never"/>
+
+    <item
+        android:id="@+id/menu_send_notification"
+        android:title="Send Notification"
+        android:icon="@android:drawable/ic_menu_send"
+        android:showAsAction="never"/>
+
+</menu>

@@ -15,6 +15,7 @@ class ConnectedFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ClubAdapter
     private val connectedList = mutableListOf<Club>()
+    private val db = FirebaseFirestore.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,15 +32,17 @@ class ConnectedFragment : Fragment() {
         return view
     }
 
-    override fun onResume() { // 👈 Called every time the user returns to this tab
+    override fun onResume() {
         super.onResume()
         fetchConnectedClubs()
     }
 
     private fun fetchConnectedClubs() {
-        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
-        val db = FirebaseFirestore.getInstance()
-        val userRef = db.collection("users").document(userEmail)
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userUid = currentUser?.uid ?: return
+        val userEmail = currentUser.email?.lowercase() ?: return
+
+        val userRef = db.collection("users").document(userUid)
 
         userRef.get().addOnSuccessListener { userDoc ->
             val followedClubs = userDoc.get("followedClubs") as? List<String> ?: emptyList()
@@ -51,9 +54,9 @@ class ConnectedFragment : Fragment() {
                     for (doc in documents) {
                         val club = doc.toObject(Club::class.java).copy(id = doc.id)
 
-                        val isPresident = club.presidentEmail == userEmail
-                        val isSupervisor = club.supervisor?.supervisorEmail == userEmail
-                        val isMember = club.members.any { it.memberEmail == userEmail }
+                        val isPresident = club.presidentEmail?.lowercase() == userEmail
+                        val isSupervisor = club.supervisor?.supervisorEmail?.lowercase() == userEmail
+                        val isMember = club.members.any { it.memberEmail?.lowercase() == userEmail }
                         val isFollowed = doc.id in followedClubs
 
                         if (isPresident || isSupervisor || isMember || isFollowed) {
